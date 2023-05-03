@@ -1,3 +1,4 @@
+import { toast } from "react-toastify";
 import {
   FAV_ADD,
   FAV_REMOVE,
@@ -15,7 +16,7 @@ const initial = {
 };
 
 function writeFavsToLocalStorage(state) {
-  localStorage.setItem("s10g4", JSON.stringify(state.favs));
+  localStorage.setItem("s10g4", JSON.stringify(state));
 }
 
 function readFavsFromLocalStorage() {
@@ -25,22 +26,63 @@ function readFavsFromLocalStorage() {
 export function myReducer(state = initial, action) {
   switch (action.type) {
     case FAV_ADD:
-      return state;
+      let isAlreayFav = state.favs.find(
+        (item) => item.id === action.payload.id
+      );
+      console.log(isAlreayFav, "isAlreayFav");
+      const newFavList = isAlreayFav
+        ? [...state.favs]
+        : [...state.favs, action.payload];
+      console.log(newFavList, "newFavList");
+      toast.success(`Güzel Şaka 🤣`);
+      writeFavsToLocalStorage(newFavList);
+
+      return {
+        ...state,
+        favs: newFavList,
+      };
 
     case FAV_REMOVE:
-      return state;
+      const newRemoveFavList = state.favs.filter(
+        (item) => item.id !== action.payload
+      );
+      writeFavsToLocalStorage(newRemoveFavList);
+      toast.warning(`Üzdün Pikachu 😭`);
+      return {
+        ...state,
+        favs: newRemoveFavList,
+      };
 
     case FETCH_SUCCESS:
-      return state;
+      toast.success(`Şakalandık 🥳`);
+      return {
+        ...state,
+        current: action.payload,
+        loading: false,
+        error: null,
+      };
 
     case FETCH_LOADING:
-      return state;
+      return {
+        ...state,
+        loading: true,
+        current: null,
+        error: null,
+      };
 
     case FETCH_ERROR:
-      return state;
+      return {
+        ...state,
+        loading: false,
+        current: null,
+        error: action.payload,
+      };
 
     case GET_FAVS_FROM_LS:
-      return state;
+      return {
+        ...state,
+        favs: readFavsFromLocalStorage() || [],
+      };
 
     default:
       return state;
